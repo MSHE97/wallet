@@ -14,7 +14,7 @@ func (e Error) Error() string {
 }
 
 var ErrPhoneRegistered = errors.New("phone already registered")
-var ErrAmountMustBePositive = errors.New("amount must be greater thwn zero")
+var ErrAmountMustBePositive = errors.New("amount must be greater then zero")
 var ErrAccountNotFound = errors.New("account not found")
 
 type Service struct {
@@ -23,20 +23,14 @@ type Service struct {
 	payments      []*types.Payment
 }
 
-// func RegisterAccount(service *Service, phone types.Phone) {
-// 	for _, account := range service.accounts {
-// 		if account.Phone == phone {
-// 			return
-// 		}
-// 	}
-
-// 	service.NextAccountID++
-// 	service.accounts = append(service.accounts, &types.Account{
-// 		ID:      service.NextAccountID,
-// 		Phone:   phone,
-// 		Balance: 0,
-// 	})
-// }
+func (s *Service) FindAccountById(accountID int64) (*types.Account, error){
+	for _, acc := range s.accounts {
+		if acc.ID == accountID {
+			return acc, nil
+		}
+	}
+	return nil, ErrAccountNotFound
+}
 
 func (s *Service) RegisterAccount(phone types.Phone) (*types.Account, error) {
 	for _, account := range s.accounts {

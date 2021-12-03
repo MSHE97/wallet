@@ -25,5 +25,6 @@ func main() {
 		return
 	}
 
-	fmt.Println(account.Balance) // 10
+	fmt.Println(account.ID)			// 1
+	fmt.Println(account.Balance)	// 10
 }
