@@ -7,6 +7,15 @@ import (
 	"github.com/google/uuid"
 )
 
+// type UUID [16]byte
+
+// func (uuid UUID) String() string {
+// 	var buf [36]byte
+// 	encodeHex(buf[:], uuid)
+// 	return string(buf[:])
+// }
+
+
 type Error string
 
 func (e Error) Error() string {
@@ -16,6 +25,8 @@ func (e Error) Error() string {
 var ErrPhoneRegistered = errors.New("phone already registered")
 var ErrAmountMustBePositive = errors.New("amount must be greater then zero")
 var ErrAccountNotFound = errors.New("account not found")
+var ErrPaymentNotFound = errors.New("payment not found")
+var ErrLowBalance = errors.New("low balance")
 
 type Service struct {
 	NextAccountID int64
@@ -87,7 +98,7 @@ func (s *Service) Pay(accountID int64, amount types.Money, category types.Paymen
 	}
 
 	if account.Balance < amount {
-		return nil, ErrAccountNotFound
+		return nil, ErrLowBalance
 	}
 
 	account.Balance -= amount
@@ -103,10 +114,26 @@ func (s *Service) Pay(accountID int64, amount types.Money, category types.Paymen
 	return payment, nil
 }
 
-// type UUID [16]byte
+func (s *Service) Reject(paymentID string) error {
+	payment, err := s.FindPaymentById(paymentID)
+	if err == ErrPaymentNotFound {
+		return err
+	}
+	payment.Status = types.PaymentStatusFail
+	for _,acc := range s.accounts{
+		if payment.AccountId == acc.ID{
+			acc.Balance += payment.Amount
+			return nil
+		}
+	}
+	return ErrAccountNotFound
+}
 
-// func (uuid UUID) String() string {
-// 	var buf [36]byte
-// 	encodeHex(buf[:], uuid)
-// 	return string(buf[:])
-// }
+func (s *Service) FindPaymentById(paymentID string) (*types.Payment, error) {
+	for _, payment := range s.payments {
+		if payment.ID == paymentID{
+			return payment, nil
+		}
+	}
+	return nil, ErrPaymentNotFound
+}
