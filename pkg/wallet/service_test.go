@@ -27,8 +27,8 @@ func TestFindAccountById_notExists(t *testing.T ) {
 	svc := &Service{}
 	var ID int64 = 1
 	account, err := svc.FindAccountById(ID)
-	if err == nil {
-		t.Errorf("got: nil error")
+	if err != ErrAccountNotFound {
+		t.Errorf("got incorrect error")
 	}
 	if account != nil {
 		t.Errorf("want: nil, got accaunt: %v", account.ID)
