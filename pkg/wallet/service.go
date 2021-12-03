@@ -2,12 +2,10 @@ package wallet
 
 import (
 	"errors"
-	"wallet/pkg/types"
+	"github.com/MSHE97/wallet/pkg/types"
 
 	"github.com/google/uuid"
 )
-
-// "github.com/MSHE97/wallet/package/types"
 
 type Error string
 

@@ -2,10 +2,8 @@ package main
 
 import (
 	"fmt"
-	"wallet/pkg/wallet"
+	"github.com/MSHE97/wallet/pkg/wallet"
 )
-
-// "github.com/MSHE97/wallet/package/wallet"
 
 func main() {
 	svc := &wallet.Service{}
