@@ -1,6 +1,9 @@
 package wallet
 
 import (
+	"fmt"
+	"github.com/google/uuid"
+	"reflect"
 	"testing"
 	"github.com/MSHE97/wallet/pkg/types"
 )
@@ -9,16 +12,16 @@ type testService struct{
 	*Service
 }
 
-func newTestService()	*testService{
-	return &testAccount{Service: &Service{}}
+func newTestService() *testService {
+	return &testService{ Service: &Service{}}
 }
 
-type testAccount struct{
-	phone 	types.Phone
-	balance types.Money
-	payments []struct{
-		amount 		types.Money
-		category	types.PaymentCategory
+type testAccount struct {
+	phone    types.Phone
+	balance  types.Money
+	payments []struct {
+		amount   types.Money
+		category types.PaymentCategory
 	}
 }
 
@@ -33,7 +36,7 @@ var defaultTestAccount = testAccount{
 	},
 }
 
-func (s *testService) addAccount(data testAccount) (types.Account, []*types.Payment, error){
+func (s *testService) addAccount(data testAccount) (*types.Account, []*types.Payment, error){
 	// регистрируем там пользователя
 	account, err := s.RegisterAccount(data.phone)
 	if err != nil {
@@ -41,7 +44,7 @@ func (s *testService) addAccount(data testAccount) (types.Account, []*types.Paym
 	}
 
 	// пополняем его счёт
-	err = s.Deposite(account.ID, data.Balance)
+	err = s.Deposit(account.ID, data.balance)
 	if err != nil {
 		return nil, nil, fmt.Errorf("can't deposity account, error = %v", err)
 	}
@@ -70,7 +73,7 @@ func TestService_FindPaymentById_success(t *testing.T) {
 	
 		// пробуем найти платёж
 		payment  := payments[0]
-		got, err := s.FindPayById(payment.ID)
+		got, err := s.FindPaymentById(payment.ID)
 		if err != nil {
 			t.Errorf("FindPaymentById(): error = %v", err)
 			return
@@ -86,14 +89,14 @@ func TestService_FindPaymentById_success(t *testing.T) {
 func TestService_FindPaymentById_fail(t *testing.T ) {
 	// создадим экземпляр сервиса
 	s := newTestService()
-	_, payments, err := s.addAccount(defaultTestAccount)
+	_, _, err := s.addAccount(defaultTestAccount)
 	if err != nil {
 		t.Error()
 		return
 	}
 	
 	// пробуем найти не существующий платёж
-	_, err := s.FindPaymentById(uuid.New().String())
+	_, err = s.FindPaymentById(uuid.New().String())
 	if err == nil {
 		t.Errorf("FindPaymentById(): must return error, returned nil")
 		return
@@ -133,7 +136,7 @@ func TestService_Reject_success(t *testing.T){
 	}
 
 	savedAccount, err := s.FindAccountById(payment.AccountId)
-	if err := nil {
+	if err != nil {
 		t.Errorf("Reject(): can't find account by ID, error = %v", err)
 		return
 	}
@@ -145,13 +148,13 @@ func TestService_Reject_success(t *testing.T){
 
 func TestReject_fail(t *testing.T){
 	s := newTestService()
-	_, payments, err := s.addAccount(defaultTestAccount)
+	_, _, err := s.addAccount(defaultTestAccount)
 	if err != nil {
 		t.Error()
 		return
 	}
 	// пробуем отменить не существующий платёж
-	err := s.Reject(uuid.New().String())
+	err = s.Reject(uuid.New().String())
 	if err != ErrPaymentNotFound{
 		t.Errorf("Reject(): payment musn't be found")
 	}
