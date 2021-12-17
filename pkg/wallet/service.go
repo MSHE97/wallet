@@ -7,15 +7,6 @@ import (
 	"github.com/google/uuid"
 )
 
-// type UUID [16]byte
-
-// func (uuid UUID) String() string {
-// 	var buf [36]byte
-// 	encodeHex(buf[:], uuid)
-// 	return string(buf[:])
-// }
-
-
 type Error string
 
 func (e Error) Error() string {
@@ -117,13 +108,13 @@ func (s *Service) Pay(accountID int64, amount types.Money, category types.Paymen
 func (s *Service) Reject(paymentID string) error {
 	var targetPayment *types.Payment
 	var targetAccount *types.Account
-	targetPayment := s.FindPaymentById(paymentID)
-	if targetPayment == nil {
+	targetPayment, err := s.FindPaymentById(paymentID)
+	if err != nil {
 		return ErrPaymentNotFound
 	}
 	
-	targetAccount := s.FindAccountById(targetPayment.ID)
-	if targetAccount == nil{
+	targetAccount, err = s.FindAccountById(targetPayment.AccountId)
+	if err != nil {
 		return ErrAccountNotFound
 	}
 	targetPayment.Status = types.PaymentStatusFail
