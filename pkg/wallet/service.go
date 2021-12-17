@@ -3,17 +3,8 @@ package wallet
 import (
 	"errors"
 	"github.com/MSHE97/wallet/pkg/types"
-
 	"github.com/google/uuid"
 )
-
-// type UUID [16]byte
-
-// func (uuid UUID) String() string {
-// 	var buf [36]byte
-// 	encodeHex(buf[:], uuid)
-// 	return string(buf[:])
-// }
 
 
 type Error string
@@ -136,4 +127,18 @@ func (s *Service) FindPaymentById(paymentID string) (*types.Payment, error) {
 		}
 	}
 	return nil, ErrPaymentNotFound
+}
+
+func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
+	// в начале найдём платёж по ID
+	payment, err := s.FindPaymentById(paymentID)
+	if err != nil {
+		return nil, err
+	}
+
+	repPay, err := s.Pay(payment.AccountId, payment.Amount, payment.Category)
+	if err != nil {
+		return nil, err
+	}
+	return repPay, nil
 }
