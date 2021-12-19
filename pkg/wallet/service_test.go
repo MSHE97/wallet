@@ -85,8 +85,8 @@ func TestFindAccountById_fail(t *testing.T ) {
 	svc := &Service{}
 	var ID int64 = 1
 	account, err := svc.FindAccountById(ID)
-	if err == nil {
-		t.Errorf("got: nil error")
+	if err != ErrAccountNotFound {
+		t.Errorf("got incorrect error")
 	}
 	if account != nil {
 		t.Errorf("want: nil, got accaunt: %v", account.ID)
@@ -130,12 +130,6 @@ func TestService_FindPaymentById_fail(t *testing.T ) {
 	_, err = s.FindPaymentById(uuid.New().String())
 	if err == nil {
 		t.Errorf("FindPaymentById(): must return error, returned nil")
-		return
-	}
-
-	if err != ErrPaymentNotFound {
-		t.Errorf("FindPaymentById(): must return ErrPaymentNotFound, returned %v", err)
-		return
 	}
 }
 

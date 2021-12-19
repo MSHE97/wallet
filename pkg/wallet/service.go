@@ -6,7 +6,6 @@ import (
 	"github.com/google/uuid"
 )
 
-
 type Error string
 
 func (e Error) Error() string {
@@ -126,18 +125,20 @@ func (s *Service) Pay(accountID int64, amount types.Money, category types.Paymen
 }
 
 func (s *Service) Reject(paymentID string) error {
-	payment, err := s.FindPaymentById(paymentID)
-	if err == ErrPaymentNotFound {
-		return err
+	var targetPayment *types.Payment
+	var targetAccount *types.Account
+	targetPayment, err := s.FindPaymentById(paymentID)
+	if err != nil {
+		return ErrPaymentNotFound
 	}
-	payment.Status = types.PaymentStatusFail
-	for _,acc := range s.accounts{
-		if payment.AccountId == acc.ID{
-			acc.Balance += payment.Amount
-			return nil
-		}
+	
+	targetAccount, err = s.FindAccountById(targetPayment.AccountId)
+	if err != nil {
+		return ErrAccountNotFound
 	}
-	return ErrAccountNotFound
+	targetPayment.Status = types.PaymentStatusFail
+	targetAccount.Balance += targetPayment.Amount
+	return nil
 }
 
 
