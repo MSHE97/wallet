@@ -36,6 +36,7 @@ var defaultTestAccount = testAccount{
 	},
 }
 
+
 func (s *testService) addAccount(data testAccount) (*types.Account, []*types.Payment, error){
 	// регистрируем там пользователя
 	account, err := s.RegisterAccount(data.phone)
@@ -84,8 +85,8 @@ func TestFindAccountById_fail(t *testing.T ) {
 	svc := &Service{}
 	var ID int64 = 1
 	account, err := svc.FindAccountById(ID)
-	if err == nil {
-		t.Errorf("got: nil error")
+	if err != ErrAccountNotFound {
+		t.Errorf("got incorrect error")
 	}
 	if account != nil {
 		t.Errorf("want: nil, got accaunt: %v", account.ID)
@@ -112,9 +113,10 @@ func TestService_FindPaymentById_success(t *testing.T) {
 	// сравниваем платежи
 	if !reflect.DeepEqual(payment, got) {
 		t.Errorf("FindPaymentById(): wrong payment returned = %v", err)
-		return
 	}
 }
+
+
 
 func TestService_FindPaymentById_fail(t *testing.T ) {
 	// создадим экземпляр сервиса
@@ -129,12 +131,6 @@ func TestService_FindPaymentById_fail(t *testing.T ) {
 	_, err = s.FindPaymentById(uuid.New().String())
 	if err == nil {
 		t.Errorf("FindPaymentById(): must return error, returned nil")
-		return
-	}
-
-	if err != ErrPaymentNotFound {
-		t.Errorf("FindPaymentById(): must return ErrPaymentNotFound, returned %v", err)
-		return
 	}
 }
 
@@ -208,5 +204,66 @@ func TestService_Repeat_success(t *testing.T)  {
 	}
 	if payment.Status == types.PaymentStatusFail {
 		t.Errorf("Repeat(): failed making repeat payment")
+	}
+}
+
+func TestService_FavoritePayment_success(t *testing.T) {
+	// создаём сервис
+	s := newTestService()
+	// создаём аккаунт с платежом
+	_, payments, err := s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Error()
+		return
+	}
+
+	// добавим платёж в избранные
+	paymentID := payments[0].ID
+	name := "One of my favorites!)"
+	favorite := &types.Favorite{
+		ID: 		"",
+		AccountID:  payments[0].AccountId,
+		Name: 		name,
+		Amount: 	payments[0].Amount,
+		Category: 	payments[0].Category,
+	}
+
+	got, err := s.FavoritePayment(paymentID, name)
+	if err != nil {
+		t.Errorf("FavoritePayment(): fail including to favorites, error = %v", err)
+	}
+	favorite.ID = got.ID
+	if !reflect.DeepEqual(got, favorite) {
+		t.Errorf("FavoritePayment(): included wrong parameter, got = \n%v\n want = \n%v\n", got, favorite)
+	}
+}
+
+func TestService_PayFromFavorite_success(t *testing.T) {
+	// создаём сервис
+	s := newTestService()
+	// создаём аккаунт с платежом
+	_, payments, err := s.addAccount(defaultTestAccount)
+	if err != nil {
+		t.Error()
+		return
+	}
+
+	// добавим платёж в избранные
+	var payment types.Payment = *payments[0]
+	name := "One of my favorites!)"
+	favorite, err := s.FavoritePayment(payment.ID, name)
+	if err != nil {
+		t.Errorf("PayFromFavorite(): fail creating favorite payment, error = %v", err)
+	}
+
+	// выполним платёж из избранного
+	favoritePay, err := s.PayFromFavorite(favorite.ID)
+	if err != nil {
+		t.Errorf("PayFromFavorite(): payment haven't done, err = %v", err)
+	}
+	var want *types.Payment = &payment
+	want.ID = favoritePay.ID
+	if !reflect.DeepEqual(favoritePay, want) {
+		t.Errorf("PayFromFavorite(): wrong payment parameter, got = \n%v\n want = \n%v\n", favoritePay, want)
 	}
 }

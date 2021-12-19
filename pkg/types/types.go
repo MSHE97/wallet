@@ -25,6 +25,15 @@ type Payment struct {
 	Status    PaymentStatus
 }
 
+// Favorite представляет избранный платёж
+type Favorite struct {
+	ID			string
+	AccountID	int64
+	Name		string
+	Amount		Money
+	Category	PaymentCategory
+}
+
 type Phone string
 
 type Account struct {
