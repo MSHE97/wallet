@@ -113,9 +113,10 @@ func TestService_FindPaymentById_success(t *testing.T) {
 	// сравниваем платежи
 	if !reflect.DeepEqual(payment, got) {
 		t.Errorf("FindPaymentById(): wrong payment returned = %v", err)
-		return
 	}
 }
+
+
 
 func TestService_FindPaymentById_fail(t *testing.T ) {
 	// создадим экземпляр сервиса
