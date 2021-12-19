@@ -4,6 +4,11 @@ import (
 	"errors"
 	"github.com/MSHE97/wallet/pkg/types"
 	"github.com/google/uuid"
+	"io"
+	"log"
+	"os"
+	"strconv"
+	"strings"
 )
 
 type Error string
@@ -192,4 +197,92 @@ func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error)  {
 		return nil, err
 	}
 	return payment, nil
+}
+
+func (s *Service) ExportToFile(path string) error {
+	// создаём или перезаписываем файл
+	file, err := os.Create(path)
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+	defer func() {
+		err := file.Close()
+		if err !=nil {
+			log.Print(err)
+		}
+	}()
+
+	// записываем аккаунты в файл
+	var line string
+	for _, acc := range s.accounts {
+		line += strconv.FormatInt( acc.ID, 10) + ";" + string(acc.Phone) +
+				";" + strconv.FormatInt(int64(acc.Balance), 10) + "|"
+	}
+	_, err = file.Write([]byte( line[:len(line)-1] ))
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+	return nil
+}
+
+func (s *Service) ImportFromFile(path string) error {
+	// открываем файл
+	file, err := os.Open(path)
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+	defer func() {
+		err := file.Close()
+		if err !=nil {
+			log.Print(err)
+		}
+	}()
+
+	// считываем файл
+	content := make([]byte, 0)
+	buf := make([]byte, 4)
+	for {
+		read, err := file.Read(buf)
+		if err == io.EOF { // файл закончился
+			content = append(content, buf[:read]...)
+			break
+		}
+		if err != nil {
+			log.Print(err)
+			return err
+		}
+		content = append(content, buf[:read]...)
+	}
+	data := string(content)
+	//log.Print(data)
+	// парсим данные
+	rows := strings.Split(data, "|")
+	var id int64
+	var phone types.Phone
+	var amount int64
+	for _, row := range rows{
+		metaData := strings.Split(row, ";")
+		id, err = strconv.ParseInt(metaData[0], 10, 64)
+		if err != nil {
+			log.Print(err)
+			return err
+		}
+		phone = types.Phone(metaData[1])
+		amount, err = strconv.ParseInt(metaData[2], 10, 64)
+		if err != nil {
+			log.Print(err)
+			return err
+		}
+		account := &types.Account{
+			ID:     id,
+			Phone:   phone,
+			Balance: types.Money(amount),
+		}
+
+		s.accounts = append(s.accounts, account)
+	}
+	return nil
 }
