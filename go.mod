@@ -1,4 +1,4 @@
-module github.com/MSHE97/wallet
+module wallet
 
 go 1.13
 

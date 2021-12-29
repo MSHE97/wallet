@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/MSHE97/wallet/pkg/wallet"
+	"wallet/pkg/wallet"
 	"log"
 )
 

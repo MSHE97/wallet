@@ -2,8 +2,8 @@ package wallet
 
 import (
 	"errors"
-	"github.com/MSHE97/wallet/pkg/types"
 	"github.com/google/uuid"
+	"wallet/pkg/types"
 	"io"
 	"log"
 	"os"

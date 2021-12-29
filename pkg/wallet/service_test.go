@@ -2,7 +2,7 @@ package wallet
 
 import (
 "fmt"
-"github.com/MSHE97/wallet/pkg/types"
+"wallet/pkg/types"
 "github.com/google/uuid"
 "reflect"
 "testing"
