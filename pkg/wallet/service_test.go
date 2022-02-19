@@ -1,11 +1,11 @@
 package wallet
 
 import (
-"fmt"
-"wallet/pkg/types"
-"github.com/google/uuid"
-"reflect"
-"testing"
+	"fmt"
+	"github.com/google/uuid"
+	"reflect"
+	"testing"
+	"wallet/pkg/types"
 )
 
 type testService struct{
@@ -63,6 +63,7 @@ func (s *testService) addAccount(data testAccount) (*types.Account, []*types.Pay
 	return account, payments, nil
 }
 
+//goland:noinspection ALL
 func TestFindAccountById_success(t *testing.T) {
 	svc := &Service{}
 	_, err := svc.RegisterAccount("000000001")
@@ -76,7 +77,7 @@ func TestFindAccountById_success(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error founding acount ID: %v ", ID)
 	}
-	if ID != account.ID{
+	if account.ID != ID {
 		t.Errorf("want: %v, got: %v", ID, account.ID)
 	}
 }
@@ -104,7 +105,7 @@ func TestService_FindPaymentById_success(t *testing.T) {
 
 	// пробуем найти платёж
 	payment  := payments[0]
-	got, err := s.FindPaymentById(payment.ID)
+	got, err := s.FindPaymentByID(payment.ID)
 	if err != nil {
 		t.Errorf("FindPaymentById(): error = %v", err)
 		return
@@ -128,7 +129,7 @@ func TestService_FindPaymentById_fail(t *testing.T ) {
 	}
 
 	// пробуем найти не существующий платёж
-	_, err = s.FindPaymentById(uuid.New().String())
+	_, err = s.FindPaymentByID(uuid.New().String())
 	if err == nil {
 		t.Errorf("FindPaymentById(): must return error, returned nil")
 	}
@@ -151,7 +152,7 @@ func TestService_Reject_success(t *testing.T){
 		return
 	}
 
-	savedPayment, err := s.FindPaymentById(payment.ID)
+	savedPayment, err := s.FindPaymentByID(payment.ID)
 	if err != nil {
 		t.Errorf("Reject(): can't find payment by ID, error = %v", err)
 		return
@@ -249,7 +250,7 @@ func TestService_PayFromFavorite_success(t *testing.T) {
 	}
 
 	// добавим платёж в избранные
-	var payment types.Payment = *payments[0]
+	var payment = *payments[0]
 	name := "One of my favorites!)"
 	favorite, err := s.FavoritePayment(payment.ID, name)
 	if err != nil {
@@ -261,7 +262,7 @@ func TestService_PayFromFavorite_success(t *testing.T) {
 	if err != nil {
 		t.Errorf("PayFromFavorite(): payment haven't done, err = %v", err)
 	}
-	var want *types.Payment = &payment
+	var want = &payment
 	want.ID = favoritePay.ID
 	if !reflect.DeepEqual(favoritePay, want) {
 		t.Errorf("PayFromFavorite(): wrong payment parameter, got = \n%v\n want = \n%v\n", favoritePay, want)

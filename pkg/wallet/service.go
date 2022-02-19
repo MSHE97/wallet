@@ -3,19 +3,13 @@ package wallet
 import (
 	"errors"
 	"github.com/google/uuid"
-	"wallet/pkg/types"
 	"io"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+	"wallet/pkg/types"
 )
-
-type Error string
-
-func (e Error) Error() string {
-	return string(e)
-}
 
 var ErrPhoneRegistered = errors.New("phone already registered")
 var ErrAmountMustBePositive = errors.New("amount must be greater then zero")
@@ -40,7 +34,7 @@ func (s *Service) FindAccountById(accountID int64) (*types.Account, error){
 	return nil, ErrAccountNotFound
 }
 
-func (s *Service) FindPaymentById(paymentID string) (*types.Payment, error) {
+func (s *Service) FindPaymentByID(paymentID string) (*types.Payment, error) {
 	for _, payment := range s.payments {
 		if payment.ID == paymentID{
 			return payment, nil
@@ -49,7 +43,7 @@ func (s *Service) FindPaymentById(paymentID string) (*types.Payment, error) {
 	return nil, ErrPaymentNotFound
 }
 
-func (s *Service) FindFavorite(favoriteID string) (*types.Favorite, error){
+func (s *Service) FindFavoriteById(favoriteID string) (*types.Favorite, error){
 	for _, favorite := range s.favorites {
 		if favorite.ID == favoriteID{
 			return favorite, nil
@@ -132,7 +126,7 @@ func (s *Service) Pay(accountID int64, amount types.Money, category types.Paymen
 func (s *Service) Reject(paymentID string) error {
 	var targetPayment *types.Payment
 	var targetAccount *types.Account
-	targetPayment, err := s.FindPaymentById(paymentID)
+	targetPayment, err := s.FindPaymentByID(paymentID)
 	if err != nil {
 		return ErrPaymentNotFound
 	}
@@ -149,7 +143,7 @@ func (s *Service) Reject(paymentID string) error {
 
 func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
 	// в начале найдём платёж по ID
-	payment, err := s.FindPaymentById(paymentID)
+	payment, err := s.FindPaymentByID(paymentID)
 	if err != nil {
 		return nil, err
 	}
@@ -163,7 +157,7 @@ func (s *Service) Repeat(paymentID string) (*types.Payment, error) {
 
 func (s *Service) FavoritePayment(paymentID string, name string) (*types.Favorite, error) {
 	// ищем платёж по ID
-	payment, err := s.FindPaymentById(paymentID)
+	payment, err := s.FindPaymentByID(paymentID)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +176,7 @@ func (s *Service) FavoritePayment(paymentID string, name string) (*types.Favorit
 
 func (s *Service) PayFromFavorite(favoriteID string) (*types.Payment, error)  {
 	// находим избранный платёж по ID
-	favorite, err := s.FindFavorite(favoriteID)
+	favorite, err := s.FindFavoriteById(favoriteID)
 	if err != nil {
 		return nil, err
 	}
@@ -284,5 +278,13 @@ func (s *Service) ImportFromFile(path string) error {
 
 		s.accounts = append(s.accounts, account)
 	}
+	return nil
+}
+
+func (s *Service) Export(path string) error {
+	return nil
+}
+
+func (s *Service) Import(path string) error {
 	return nil
 }
